@@ -1,2 +1,3 @@
-from subapps.config import *
-from subapps.gui import *
+from qotd.qotd import *
+
+run_qotd()
