@@ -10,18 +10,15 @@ from typing import List, Dict, Any
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Add parent directory to sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'subfiles')))
-from subfiles.config import *
-
-# Control flag for QOTD
-QOTD_ENABLED = True
+# Add parent directory to sys.path for importing settings
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from settings import QOTD_ENABLED
 
 # File paths
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-QUESTIONS_FILE = os.path.join(SCRIPT_DIR, 'qotd_200.json')
-BACKUP_FILE = os.path.join(SCRIPT_DIR, 'qotd_backup.json')
-LAST_QOTD_FILE = os.path.join(SCRIPT_DIR, 'last_qotd.json')
+QUESTIONS_FILE = os.path.join(SCRIPT_DIR, 'qotd/qotd_200.json')
+BACKUP_FILE = os.path.join(SCRIPT_DIR, 'qotd/qotd_backup.json')
+LAST_QOTD_FILE = os.path.join(SCRIPT_DIR, 'qotd/last_qotd.json')
 
 def load_json(filename: str) -> Dict[str, Any]:
     try:
@@ -86,14 +83,28 @@ def run_qotd() -> None:
     else:
         logging.info("QOTD is not enabled or it's not a new day yet")
 
+def regenerate_choice() -> None:
+    questions = load_questions(QUESTIONS_FILE)
+    random_question = pick_random_question(questions)
+    logging.info(f"Regenerated QOTD question: {random_question}")
+
 def main() -> None:
     while True:
         try:
-            run_qotd()
-            time.sleep(86400)  # Wait 24 hours
+            now = datetime.now()
+            last_qotd = load_last_qotd_date()
+
+            if is_new_day(last_qotd):
+                run_qotd()
+            else:
+                logging.info("Waiting for the next day to run QOTD.")
+
+            # Sleep for an hour and check again
+            time.sleep(3600)  
         except Exception as e:
             logging.error(f"An error occurred: {str(e)}")
             time.sleep(3600)  # Wait 1 hour before retrying on error
+
 
 if __name__ == "__main__":
     main()

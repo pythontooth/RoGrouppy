@@ -1,3 +1,3 @@
-from qotd.qotd import *
+from qotd import *
 
 run_qotd()
